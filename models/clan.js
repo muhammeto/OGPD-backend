@@ -4,8 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     Name: DataTypes.STRING,
     NationID: DataTypes.INTEGER
   }, {});
-  Clan.associate = function(models) {
-    // associations can be defined here
+  Clan.associate = function (models) {
+    Clan.hasMany(models.Character);
   };
   return Clan;
 };

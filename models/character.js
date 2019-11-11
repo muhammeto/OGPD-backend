@@ -8,8 +8,9 @@ module.exports = (sequelize, DataTypes) => {
     ClanID: DataTypes.INTEGER,
     NationID: DataTypes.INTEGER
   }, {});
-  Character.associate = function(models) {
-    // associations can be defined here
+  Character.associate = function (models) {
+    Character.hasMany(models.Item);
+    Character.belongsTo(models.Account);
   };
   return Character;
 };

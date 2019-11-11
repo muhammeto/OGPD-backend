@@ -2,33 +2,47 @@ const express = require('express');
 const router = express.Router();
 const sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
-const { Character } = require('../models/index');
+const { Character, Item } = require('../models/index');
+
 
 //#region View
-// View our character with Account ID
-router.post('/view', function (req, res) {
+// View our characters with Account ID
+router.get('/view', function (req, res) {
     var accountID = jwt.verify(req.body.token, 'OGPD').accountID;
     if (accountID) {
-        Character.findAll({ where: { accountId: accountID } }).then(characters => {
-            character.success = 1;
+
+        Character.findAll({
+            where: { accountId: accountID },
+            include: [
+                {
+                    model: Item,
+                }
+            ]
+        }).then(characters => {
             res.json(characters);
-        }).catch(err => {
-            var response = {
-                success: 0,
-                reason: "Your account doesn't have any character. Please create character."
-            }
-            res.json(response);
-        });
+        })
+            .catch(err => {
+                var response = {
+                    success: 0,
+                    reason: "Your account doesn't have any character. Please create character."
+                }
+                res.json(response);
+            });
     }
 }
 )
 // View other account's character with Account ID
-router.post('/view/:param', function (req, res) {
+router.get('/view/:param', function (req, res) {
     var param = req.params.param;
     if (isNaN(parseInt(param))) {
         if (param) {
-            Character.findOne({ where: { name: param } }).then(character => {
-                character.success = 1;
+            Character.findOne({
+                where: { name: param }, include: [
+                    {
+                        model: Item,
+                    }
+                ]
+            }).then(character => {
                 res.json(character);
             }).catch(err => {
                 var response = {
@@ -41,9 +55,14 @@ router.post('/view/:param', function (req, res) {
     } else {
         param = parseInt(param);
         if (param) {
-            Character.findAll({ where: { accountId: param } }).then(characters => {
-                character.success = 1;
-                res.json(characters);
+            Character.findOne({
+                where: { id: param }, include: [
+                    {
+                        model: Item,
+                    }
+                ]
+            }).then(character => {
+                res.json(character);
             }).catch(err => {
                 var response = {
                     success: 0,

@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
   const Nation = sequelize.define('Nation', {
     Name: DataTypes.STRING
   }, {});
-  Nation.associate = function(models) {
-    // associations can be defined here
+  Nation.associate = function (models) {
+    Nation.hasMany(models.Character);
   };
   return Nation;
 };

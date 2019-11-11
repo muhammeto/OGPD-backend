@@ -5,8 +5,8 @@ module.exports = (sequelize, DataTypes) => {
     CharacterID: DataTypes.INTEGER,
     Level: DataTypes.INTEGER
   }, {});
-  Item.associate = function(models) {
-    // associations can be defined here
+  Item.associate = function (models) {
+    Item.belongsTo(models.Character);
   };
   return Item;
 };

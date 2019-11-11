@@ -6,8 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     Email: DataTypes.STRING,
     Role: DataTypes.INTEGER
   }, {});
-  Account.associate = function(models) {
-    // associations can be defined here
+  Account.associate = function (models) {
+    Account.hasMany(models.Character);
   };
   return Account;
 };
