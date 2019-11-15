@@ -9,10 +9,6 @@ module.exports = {
         unique: true,
         autoIncrement: true
       },
-      Name: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
       CharacterID: {
         type: Sequelize.INTEGER,
         references: {
@@ -20,10 +16,12 @@ module.exports = {
           key: 'id'
         }
       },
-      Level: {
+      ItemBaseID: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1
+        references: {
+          model: 'itembases',
+          key: 'id'
+        }
       },
       createdAt: {
         type: Sequelize.DATE,

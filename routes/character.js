@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
-const { Character, Item } = require('../models/index');
+const { Account, Character, Item } = require('../models/index');
 
 
 //#region View
@@ -37,9 +36,11 @@ router.get('/view/:param', function (req, res) {
     if (isNaN(parseInt(param))) {
         if (param) {
             Character.findOne({
-                where: { name: param }, include: [
+                where: { Name: param },
+                attributes: ['id', 'Name', 'Class', 'Level', 'AccountID', 'ClanID', 'NationID', 'createdAt', 'updatedAt'],
+                include: [
                     {
-                        model: Item,
+                        model: Item
                     }
                 ]
             }).then(character => {
@@ -87,7 +88,7 @@ router.post('/create', function (req, res) {
             }).catch(err => {
                 var response = {
                     success: 0,
-                    reason: "Your account don't have any character. Please create character."
+                    reason: "Can't create this character."
                 }
                 res.json(response);
             });
@@ -149,6 +150,49 @@ router.post('/rank', function (req, res) {
     }
 })
 //#endregion
+//#region Item Add/Delete
+router.post('/view/:param/itemAdd', function (req, res) {
+    var { token, itembaseId } = req.body;
+    var accountID = jwt.verify(token, 'OGPD').accountID;
+    var param = req.params.param;
+    Account.findByPk(accountID).then(account => {
+        var accountRole = account.dataValues.Role;
+        if (accountRole == 0) {
+            // Means that we are game admin and we can add/delete items to the character.
+            Item.create({ CharacterID: param, ItemBaseID: itembaseId }).then(item => {
+                item.dataValues.success = 1;
+                res.json(item);
+            }).catch(err => {
+                var response = {
+                    success: 0,
+                    reason: "Can't create this item."
+                }
+                res.json(response);
+            });
+        }
+    })
+})
 
+router.post('/view/:param/itemDelete', function (req, res) {
+    var { token, itembaseId } = req.body;
+    var accountID = jwt.verify(token, 'OGPD').accountID;
+    var param = req.params.param;
+    Account.findByPk(accountID).then(account => {
+        var accountRole = account.dataValues.Role;
+        if (accountRole == 0) {
+            // Means that we are game admin and we can add/delete items to the character.
+            Item.destroy({ where: { CharacterID: param, ItemBaseID: itembaseId } }).then(result => {
+                res.json(result);
+            }).catch(err => {
+                var response = {
+                    success: 0,
+                    reason: "Can't delete this item."
+                }
+                res.json(response);
+            });
+        }
+    })
+})
+//#endregion
 
 module.exports = router;

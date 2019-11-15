@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const { Account } = require('../models/index');
 

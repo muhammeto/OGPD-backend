@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Clan.associate = function (models) {
     Clan.hasMany(models.Character);
+    Clan.belongsTo(models.Nation);
   };
   return Clan;
 };

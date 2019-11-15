@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Nation.associate = function (models) {
     Nation.hasMany(models.Character);
+    Nation.hasMany(models.Clan);
   };
   return Nation;
 };

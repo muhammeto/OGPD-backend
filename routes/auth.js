@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const sequelize = require('sequelize');
 const jwt = require('jsonwebtoken');
 const { Account } = require('../models/index');
 
@@ -8,8 +7,8 @@ const { Account } = require('../models/index');
 router.post('/login', function (req, res) {
     let { username, password } = req.body;
     if (password && username) {
-        Account.findOne({ where: { Name: username, Password: password } }).then(user => {
-            let token = jwt.sign({ accountID: user.id }, 'OGPD');
+        Account.findOne({ where: { Name: username, Password: password } }).then(account => {
+            let token = jwt.sign({ accountID: account.id, role: account.role }, 'OGPD');
             res.send(token);
         }).catch(err => {
             let response = {

@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
   Character.associate = function (models) {
     Character.hasMany(models.Item);
     Character.belongsTo(models.Account);
+    Character.belongsTo(models.Nation);
   };
   return Character;
 };

@@ -1,12 +1,12 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Item = sequelize.define('Item', {
-    Name: DataTypes.STRING,
     CharacterID: DataTypes.INTEGER,
-    Level: DataTypes.INTEGER
+    ItemBaseID: DataTypes.INTEGER
   }, {});
   Item.associate = function (models) {
     Item.belongsTo(models.Character);
+    Item.belongsTo(models.ItemBase);
   };
   return Item;
 };
