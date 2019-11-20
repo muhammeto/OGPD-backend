@@ -2,35 +2,61 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { Account } = require('../models/index');
+const bcrypt = require('bcrypt');
+const { Validator } = require('node-input-validator');
 
 // Home page route.
-router.post('/login', function (req, res) {
-    let { username, password } = req.body;
-    if (password && username) {
-        Account.findOne({ where: { Name: username, Password: password } }).then(account => {
-            let token = jwt.sign({ accountID: account.id, role: account.role }, 'OGPD');
-            res.send(token);
+router.post('/login', async function (req, res) {
+    var { username, password } = req.body;
+    const loginValidation = new Validator(req.body, {
+        username: 'required|alphaNumeric|minLength:4',
+        password: 'required|alphaNumeric|minLength:4'
+    });
+    const matched = await loginValidation.check();
+    if (matched) {
+        Account.findOne({ where: { Name: username } }).then(account => {
+            const a = account.get({ plain: true });
+            if (bcrypt.compareSync(password, a.Password)) {
+                let token = jwt.sign({ accountID: account.id, role: account.role }, 'OGPD');
+                res.json(token);
+            } else {
+                let response = {
+                    reason: 'Password is incorrect!'
+                }
+                res.json(response);
+            }
         }).catch(err => {
             let response = {
-                reason: 'Username or password is incorrect or this user not exist in database!'
+                reason: 'Username is incorrect or not exist in database!'
             }
             res.json(response);
         });
+    } else {
+        res.json(loginValidation.errors);
     }
 })
 
-router.post('/register', function (req, res) {
+router.post('/register', async function (req, res) {
     var { username, password, email } = req.body;
-    if (password && username && email) {
-        Account.create({ Name: username, Password: password, Email: email }).then(user => {
+    const registerValidation = new Validator(req.body, {
+        username: 'required|alphaNumeric|minLength:4',
+        password: 'required|alphaNumeric|minLength:4',
+        email: 'required|email'
+    });
+    const matched = await registerValidation.check();
+    if (matched) {
+        let hash = bcrypt.hashSync(password, 10);
+        Account.create({ Name: username, Password: hash, Email: email }).then(user => {
             let token = jwt.sign({ accountID: user.id }, 'OGPD');
-            res.send(token);
+            res.json({ token });
         }).catch(err => {
             let response = {
                 reason: 'This username already exists in database!'
             }
             res.json(response);
         });
+    } else {
+        res.json(registerValidation.errors);
     }
 })
 

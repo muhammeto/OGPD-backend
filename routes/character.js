@@ -7,9 +7,11 @@ const { Account, Character, Item } = require('../models/index');
 //#region View
 // View our characters with Account ID
 router.get('/view', function (req, res) {
-    var accountID = jwt.verify(req.body.token, 'OGPD').accountID;
+    if (!req.headers.token) {
+        res.json({ reason: 'No token provided' });
+    }
+    var accountID = jwt.verify(req.headers.token, 'OGPD').accountID;
     if (accountID) {
-
         Character.findAll({
             where: { accountId: accountID },
             include: [
@@ -116,6 +118,12 @@ router.post('/delete', function (req, res) {
 router.post('/update', function (req, res) {
     var { characterId, nickname, clss, nation, level, clan, token } = req.body;
     var accountID = jwt.verify(token, 'OGPD').accountID;
+
+    const a = {};
+    if (nickname != null) {
+        a = { ...a, Name: nickname }
+    }
+
     if (accountID) {
         Character.update(
             { Name: nickname, Class: clss, NationID: nation, Level: level, ClanID: clan },
@@ -136,7 +144,6 @@ router.post('/rank', function (req, res) {
             order: [
                 ['Level', 'DESC']
             ],
-            limit: 10
         }).then(characters => {
             characters.success = 1;
             res.json(characters);
