@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { Account, Character, Item } = require('../models/index');
+const { Validator } = require('node-input-validator');
 
 
 //#region View
@@ -79,22 +80,28 @@ router.get('/view/:param', function (req, res) {
 )
 //#endregion
 //#region Create
-router.post('/create', function (req, res) {
-    var { nickname, nation, clss, token } = req.body;
+router.post('/create', async function (req, res) {
+    var { token } = req.body;
     var accountID = jwt.verify(token, 'OGPD').accountID;
-    if (accountID) {
-        if (nickname && nation && clss) {
-            Character.create({ Name: nickname, Class: clss, NationID: nation, AccountID: accountID }).then(character => {
-                character.success = 1;
-                res.json(character);
-            }).catch(err => {
-                var response = {
-                    success: 0,
-                    reason: "Can't create this character."
-                }
-                res.json(response);
-            });
-        }
+    var { nickname, nation, clss } = req.body;
+    const characterValidator = new Validator(req.body, {
+        nickname: 'required|alphaNumeric|minLength:4',
+        nation: 'required',
+        clss: 'required'
+    });
+    const matched = await characterValidator.check();
+    if (accountID && matched) {
+        Character.create({ Name: nickname, Class: clss, NationID: nation, AccountID: accountID }).then(character => {
+            res.json(character);
+        }).catch(err => {
+            var response = {
+                success: 0,
+                reason: "Can't create this character."
+            }
+            res.json(response);
+        });
+    } else {
+        res.json(characterValidator.errors);
     }
 }
 )
@@ -119,7 +126,7 @@ router.post('/update', function (req, res) {
     var { characterId, nickname, clss, nation, level, clan, token } = req.body;
     var accountID = jwt.verify(token, 'OGPD').accountID;
 
-    const a = {};
+    let a = {};
     if (nickname != null) {
         a = { ...a, Name: nickname }
     }
@@ -138,7 +145,10 @@ router.post('/update', function (req, res) {
 //#endregion
 //#region Get Ranking by Level
 router.post('/rank', function (req, res) {
-    var accountID = jwt.verify(req.body.token, 'OGPD').accountID;
+    if (!req.headers.token) {
+        res.json({ reason: 'No token provided' });
+    }
+    var accountID = jwt.verify(req.headers.token, 'OGPD').accountID;
     if (accountID) {
         Character.findAll({
             order: [
