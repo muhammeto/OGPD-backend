@@ -17,7 +17,10 @@ router.post('/login', async function (req, res) {
         Account.findOne({ where: { Name: username } }).then(account => {
             const a = account.get({ plain: true });
             if (bcrypt.compareSync(password, a.Password)) {
-                let token = jwt.sign({ accountID: account.id, role: account.role }, 'OGPD');
+                let token = jwt.sign({
+                    accountID: account.id,
+                    role: account.Role
+                }, 'OGPD');
                 res.json(token);
             } else {
                 let response = {
@@ -47,7 +50,10 @@ router.post('/register', async function (req, res) {
     if (matched) {
         let hash = bcrypt.hashSync(password, 10);
         Account.create({ Name: username, Password: hash, Email: email }).then(user => {
-            let token = jwt.sign({ accountID: user.id }, 'OGPD');
+            let token = jwt.sign({
+                accountID: user.id,
+                role: user.Role
+            }, 'OGPD');
             res.json({ token });
         }).catch(err => {
             let response = {

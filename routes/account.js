@@ -88,4 +88,14 @@ router.get('/delete/:param', function (req, res) {
 )
 
 //#endregion
+router.get('/role', function (req, res) {
+
+    var role = jwt.verify(req.body.token, 'OGPD').role;
+    if (typeof role !== 'undefined') {
+        res.json({ role });
+    } else {
+        res.json({ reason: "Cannot access role" });
+    }
+}
+)
 module.exports = router;
